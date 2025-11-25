@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organizational Hierarchy Viewer</title>
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- 
+    USAGE INSTRUCTIONS:
+    - This application loads employee data from a CSV file.
+    - Default CSV path: data/employees.csv (configurable in app.js, line ~15)
+    - CSV format: id,name,title,manager_id
+    - manager_id should be empty, -1, or 0 for top-level employees (CEO, etc.)
+    - The app handles whitespace, blank lines, and circular reference detection.
+    
+    TO RUN:
+    1. Ensure your CSV file is at data/employees.csv (or update CSV_PATH in app.js)
+    2. Open this file in a web server (required for CSV fetch to work)
+    3. Use the search box to find employees by name or title
+    4. Use "Find by ID" to search by employee ID
+    5. Click on search results to view employee details, reporting chain, peers, and direct reports
+    -->
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>🏢 Organizational Hierarchy</h1>
+            <p class="subtitle">Employee Directory & Reporting Structure</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="search-section">
+            <div class="search-container">
+                <label for="search-input" class="visually-hidden">Search employees by name or title</label>
+                <input 
+                    type="text" 
+                    id="search-input" 
+                    class="search-input" 
+                    placeholder="Search by name or title..."
+                    aria-label="Search employees by name or title"
+                    aria-autocomplete="list"
+                    aria-controls="search-suggestions"
+                    autocomplete="off"
+                />
+                <div id="search-suggestions" class="suggestions-dropdown" role="listbox" aria-label="Search suggestions"></div>
+            </div>
+
+            <div class="id-search-container">
+                <label for="id-input" class="visually-hidden">Find employee by ID</label>
+                <input 
+                    type="number" 
+                    id="id-input" 
+                    class="id-input" 
+                    placeholder="Find by ID"
+                    aria-label="Find employee by ID"
+                />
+                <button id="id-search-btn" class="id-search-btn" aria-label="Search by ID">Search</button>
+            </div>
+
+            <div class="view-controls">
+                <button id="toggle-view-btn" class="toggle-btn" aria-label="Toggle between compact and expanded view">
+                    <span id="view-mode-text">Compact</span> View
+                </button>
+            </div>
+        </div>
+
+        <div id="error-message" class="error-message" role="alert" aria-live="polite"></div>
+        <div id="loading-message" class="loading-message" role="status" aria-live="polite">Loading employee data...</div>
+
+        <div id="employee-details" class="employee-details" style="display: none;">
+            <div class="profile-card">
+                <h2 id="employee-name">Employee Name</h2>
+                <p id="employee-title" class="employee-title">Job Title</p>
+                <p id="employee-id" class="employee-id">ID: <span></span></p>
+            </div>
+
+            <div class="reporting-section">
+                <h3>Reporting Chain</h3>
+                <div id="reporting-chain" class="reporting-chain"></div>
+            </div>
+
+            <div class="peers-section">
+                <h3>Peers</h3>
+                <div id="peers-list" class="peers-list"></div>
+            </div>
+
+            <div class="reports-section">
+                <h3>Direct Reports</h3>
+                <div id="direct-reports" class="direct-reports"></div>
+            </div>
+        </div>
+
+        <div id="empty-state" class="empty-state">
+            <svg class="empty-icon" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <p>Search for an employee to view their details</p>
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
