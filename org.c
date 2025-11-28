@@ -22,6 +22,8 @@ typedef struct Employee {
     int id;
     char name[NAME_LEN];
     char title[TITLE_LEN];
+    char email[64];
+    char phone[32];
     int manager_id;
     struct Employee *manager;
     struct Employee *children[MAX_CHILDREN];
@@ -71,7 +73,7 @@ int ci_contains(const char *s, const char *sub) {
 void print_tree(Employee *e, int depth) {
     if (!e) return;
     for (int i = 0; i < depth; i++) printf("  ");
-    printf("%d | %s (%s)\n", e->id, e->name, e->title);
+    printf("%d | %s (%s) [%s, %s]\n", e->id, e->name, e->title, e->email, e->phone);
 
     for (int i = 0; i < e->child_count; i++)
         print_tree(e->children[i], depth + 1);
@@ -118,25 +120,75 @@ int load_csv(const char *filename) {
         trim(line);
         if (line[0] == 0) continue;
 
+                /* Skip header if present (line contains 'id' and 'name') */
+        {
+            char lowline[LINE_LEN];
+            strncpy(lowline, line, LINE_LEN - 1);
+            lowline[LINE_LEN - 1] = '\0';
+            for (int _i = 0; lowline[_i]; _i++) lowline[_i] = tolower((unsigned char)lowline[_i]);
+            if (strstr(lowline, "id") && strstr(lowline, "name")) {
+                continue; /* skip header row */
+            }
+        }
+
         char *tok = strtok(line, ",");
         if (!tok) continue;
         int id = atoi(tok);
 
+                /* --- NAME --- */
         tok = strtok(NULL, ",");
         if (!tok) continue;
-        char name[NAME_LEN]; strncpy(name, tok, NAME_LEN);
+        char name[NAME_LEN];
+        memset(name, 0, NAME_LEN);
+        strncpy(name, tok, NAME_LEN - 1);
+        name[NAME_LEN - 1] = '\0';
+        trim(name);
 
+        /* --- TITLE --- */
         tok = strtok(NULL, ",");
         if (!tok) continue;
-        char title[TITLE_LEN]; strncpy(title, tok, TITLE_LEN);
+        char title[TITLE_LEN];
+        memset(title, 0, TITLE_LEN);
+        strncpy(title, tok, TITLE_LEN - 1);
+        title[TITLE_LEN - 1] = '\0';
+        trim(title);
 
+        /* --- MANAGER ID --- */
         tok = strtok(NULL, ",");
         int mid = tok ? atoi(tok) : -1;
+
+        /* --- EMAIL --- */
+        tok = strtok(NULL, ",");
+        char email[64];
+        memset(email, 0, sizeof(email));
+        if (tok) {
+            strncpy(email, tok, sizeof(email) - 1);
+            email[sizeof(email) - 1] = '\0';
+            trim(email);
+        } else {
+            email[0] = '\0';
+        }
+
+        /* --- PHONE (last field may contain newline) --- */
+        tok = strtok(NULL, "\n");
+        char phone[32];
+        memset(phone, 0, sizeof(phone));
+        if (tok) {
+            trim(tok);
+            strncpy(phone, tok, sizeof(phone) - 1);
+            phone[sizeof(phone) - 1] = '\0';
+            trim(phone);
+        } else {
+            phone[0] = '\0';
+        }
+      
 
         Employee *e = malloc(sizeof(Employee));
         e->id = id;
         strcpy(e->name, name);
         strcpy(e->title, title);
+        strcpy(e->email, email);
+        strcpy(e->phone, phone);
         e->manager_id = mid;
         e->manager = NULL;
         e->child_count = 0;
@@ -189,6 +241,8 @@ void menu(const char *csv) {
             if (!e) printf("Not found.\n");
             else {
                 printf("%d | %s (%s)\n", e->id, e->name, e->title);
+
+                printf("Email: %s | Phone: %s\n", e->email, e->phone);
                 print_reporting(e);
                 print_peers(e);
             }
@@ -202,7 +256,9 @@ void menu(const char *csv) {
             for (int i = 0; i < emp_count; i++) {
                 if (ci_contains(employees[i]->name, input)) {
                     found = 1;
+
                     printf("\n%d | %s (%s)\n", employees[i]->id, employees[i]->name, employees[i]->title);
+                    printf("Email: %s | Phone: %s\n", employees[i]->email, employees[i]->phone);
                     print_reporting(employees[i]);
                 }
             }

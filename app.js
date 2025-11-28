@@ -15,7 +15,7 @@
  * - Collapsible tree visualization
  */
 
-const CSV_PATH = 'data/employees.csv';
+const CSV_PATH = '/employees.csv';
 
 let employees = [];
 let employeeMap = new Map();
@@ -39,16 +39,20 @@ const elements = {
     employeeName: document.getElementById('employee-name'),
     employeeTitle: document.getElementById('employee-title'),
     employeeId: document.getElementById('employee-id'),
+    employeeEmail: document.getElementById('employee-email'),
+    employeePhone: document.getElementById('employee-phone'),
     reportingChain: document.getElementById('reporting-chain'),
     peersList: document.getElementById('peers-list'),
     directReports: document.getElementById('direct-reports')
 };
 
 class Employee {
-    constructor(id, name, title, managerId) {
+    constructor(id, name, title, managerId = null, email = '', phone = '') {
         this.id = id;
-        this.name = name.trim();
-        this.title = title.trim();
+        this.name = name ? name.trim() : '';
+        this.title = title ? title.trim() : '';
+        this.email = email ? email.trim() : '';
+        this.phone = phone ? phone.trim() : '';
         this.managerId = managerId;
         this.manager = null;
         this.children = [];
@@ -82,6 +86,9 @@ function parseCSV(csvText) {
         const name = parts[1];
         const title = parts[2];
         const managerIdStr = parts[3] || '';
+        const email = parts[4] || '';
+        const phone = parts[5] || '';
+        
         
         if (isNaN(id) || !name || !title) {
             if (isFirstLine && name.toLowerCase().includes('name')) {
@@ -101,7 +108,8 @@ function parseCSV(csvText) {
             }
         }
         
-        parsedEmployees.push(new Employee(id, name, title, managerId));
+        parsedEmployees.push(new Employee(id, name, title, managerId, email, phone));
+
     }
     
     return parsedEmployees;
@@ -174,7 +182,7 @@ async function loadEmployeeData() {
         const response = await fetch(CSV_PATH);
         
         if (!response.ok) {
-            throw new Error(`Failed to load CSV file: ${response.statusText}`);
+                throw new Error(`Failed to load CSV file: ${response.statusText}. Ensure 'employees.csv' exists in the public folder.`);
         }
         
         const csvText = await response.text();
@@ -212,16 +220,22 @@ function debounce(func, wait) {
 }
 
 function searchEmployees(query) {
-    if (!query || query.trim() === '') {
-        return [];
-    }
-    
+    if (!query || query.trim() === '') return [];
     const lowerQuery = query.toLowerCase();
-    
-    return employees.filter(emp => 
-        emp.name.toLowerCase().includes(lowerQuery) || 
-        emp.title.toLowerCase().includes(lowerQuery)
-    );
+
+    return employees.filter(emp => {
+    const name = emp.name || '';
+    const title = emp.title || '';
+    const email = emp.email || '';
+    const phone = emp.phone || '';
+
+    return name.toLowerCase().includes(lowerQuery) ||
+           title.toLowerCase().includes(lowerQuery) ||
+           email.toLowerCase().includes(lowerQuery) ||
+           phone.toLowerCase().includes(lowerQuery) ||
+           String(emp.id) === query.trim();
+});
+
 }
 
 function showSuggestions(results) {
@@ -246,7 +260,11 @@ function showSuggestions(results) {
         item.innerHTML = `
             <h4>${emp.name}</h4>
             <p>${emp.title}</p>
-            <span>ID: ${emp.id}</span>
+            <div class="suggest-meta">
+                <span>ID: ${emp.id}</span>
+                ${emp.email ? `<span>• ${emp.email}</span>` : ''}
+                ${emp.phone ? `<span>• ${emp.phone}</span>` : ''}
+            </div>
         `;
         
         item.addEventListener('click', () => selectEmployee(emp.id));
@@ -295,6 +313,9 @@ function selectEmployee(empId) {
 function displayEmployeeDetails(emp) {
     elements.employeeName.textContent = emp.name;
     elements.employeeTitle.textContent = emp.title;
+    elements.employeeEmail.textContent = emp.email;
+    elements.employeePhone.textContent = emp.phone;
+    
     elements.employeeId.querySelector('span').textContent = emp.id;
     
     displayReportingChain(emp);
@@ -315,7 +336,7 @@ function displayReportingChain(emp) {
     
     if (chain.length === 1) {
         elements.reportingChain.innerHTML = '<div class="no-results">Top-level employee (no manager)</div>';
-        return;
+        return; 
     }
     
     chain.forEach(person => {
@@ -329,7 +350,11 @@ function displayReportingChain(emp) {
         item.innerHTML = `
             <h4>${person.name}</h4>
             <p>${person.title}</p>
-            <span>ID: ${person.id}</span>
+            <div class="suggest-meta">
+                <span>ID: ${person.id}</span>
+                ${person.email ? `<span>• ${person.email}</span>` : ''}
+                ${person.phone ? `<span>• ${person.phone}</span>` : ''}
+            </div>
         `;
         
         elements.reportingChain.appendChild(item);
@@ -361,7 +386,11 @@ function displayPeers(emp) {
         item.innerHTML = `
             <h4>${peer.name}</h4>
             <p>${peer.title}</p>
-            <span>ID: ${peer.id}</span>
+            <div class="suggest-meta">
+                <span>ID: ${peer.id}</span>
+                ${peer.email ? `<span>• ${peer.email}</span>` : ''}
+                ${peer.phone ? `<span>• ${peer.phone}</span>` : ''}
+            </div>
         `;
         
         item.addEventListener('click', () => selectEmployee(peer.id));
@@ -412,7 +441,11 @@ function renderTreeNode(emp, container, depth) {
         <div class="tree-item-content">
             <h4>${emp.name} ${errorBadge}</h4>
             <p>${emp.title}</p>
-            <span>ID: ${emp.id}</span>
+            <div class="suggest-meta">
+                <span>ID: ${emp.id}</span>
+                ${emp.email ? `<span>• ${emp.email}</span>` : ''}
+                ${emp.phone ? `<span>• ${emp.phone}</span>` : ''}
+            </div>
         </div>
     `;
     

@@ -9,19 +9,22 @@
     <!-- 
     USAGE INSTRUCTIONS:
     - This application loads employee data from a CSV file.
-    - Default CSV path: data/employees.csv (configurable in app.js, line ~15)
-    - CSV format: id,name,title,manager_id
-    - manager_id should be empty, -1, or 0 for top-level employees (CEO, etc.)
+    - Default CSV path: /employees.csv (configurable in app.js)
+    - CSV format: id,name,title,manager_id,email,phone
+     Example:
+     1,John Doe,CEO,,john.doe@example.com,+91-9876543210
+     manager_id should be empty, -1, or 0 for top-level employees (CEO, etc.)
     - The app handles whitespace, blank lines, and circular reference detection.
     
     TO RUN:
-    1. Ensure your CSV file is at data/employees.csv (or update CSV_PATH in app.js)
+    1. Ensure your CSV file is at employees.csv (in the root or public folder)
     2. Open this file in a web server (required for CSV fetch to work)
     3. Use the search box to find employees by name or title
     4. Use "Find by ID" to search by employee ID
     5. Click on search results to view employee details, reporting chain, peers, and direct reports
     -->
 </head>
+<!-- Removed the P tag note as it's not relevant for the hosted version -->
 <body>
     <header>
         <div class="header-content">
@@ -70,12 +73,13 @@
         <div id="loading-message" class="loading-message" role="status" aria-live="polite">Loading employee data...</div>
 
         <div id="employee-details" class="employee-details" style="display: none;">
-            <div class="profile-card">
+                <div class="profile-card">
                 <h2 id="employee-name">Employee Name</h2>
                 <p id="employee-title" class="employee-title">Job Title</p>
+                <p id="employee-email" class="employee-title" style="font-size: 0.9rem; color: var(--color-text-muted);">Email</p>
+                <p id="employee-phone" class="employee-title" style="font-size: 0.9rem; color: var(--color-text-muted);">Phone</p>
                 <p id="employee-id" class="employee-id">ID: <span></span></p>
             </div>
-
             <div class="reporting-section">
                 <h3>Reporting Chain</h3>
                 <div id="reporting-chain" class="reporting-chain"></div>
