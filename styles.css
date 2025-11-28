@@ -191,10 +191,7 @@ h1 {
     color: var(--color-text-muted);
 }
 
-.id-search-container {
-    display: flex;
-    gap: 0.5rem;
-}
+
 
 .id-input {
     width: 120px;
@@ -470,4 +467,8 @@ h1 {
     color: var(--color-error);
     border-radius: 0.25rem;
     font-size: 0.75rem;
+}
+/* hide leftover ID search button (quick fix) */
+#id-search-btn {
+    display: none !important;
 }

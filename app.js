@@ -28,7 +28,6 @@ let activeSuggestionIndex = -1;
 const elements = {
     searchInput: document.getElementById('search-input'),
     idInput: document.getElementById('id-input'),
-    idSearchBtn: document.getElementById('id-search-btn'),
     suggestions: document.getElementById('search-suggestions'),
     employeeDetails: document.getElementById('employee-details'),
     emptyState: document.getElementById('empty-state'),
@@ -569,13 +568,8 @@ function searchById() {
 elements.searchInput.addEventListener('input', debounce(handleSearchInput, 200));
 elements.searchInput.addEventListener('keydown', handleKeyboardNavigation);
 
-elements.idInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        searchById();
-    }
-});
 
-elements.idSearchBtn.addEventListener('click', searchById);
+
 
 
 
