@@ -578,5 +578,10 @@ document.addEventListener('click', (e) => {
         hideSuggestions();
     }
 });
+elements.idInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        searchById();
+    }
+});
 
 loadEmployeeData();
